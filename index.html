@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI聊天室</title>
+    <!-- 添加 markdown-it 库和 KaTeX 支持 -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath@1.0.0/texmath.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .settings {
+            width: 25%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            height: fit-content;
+        }
+        .settings div {
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .settings label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .settings input,
+        .settings select,
+        .settings textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .chat-section {
+            width: 75%;
+        }
+        .chat-container {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .input-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        textarea {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            min-width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.stop {
+            background-color: #dc3545;
+        }
+        button.stop:hover {
+            background-color: #c82333;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e9ecef;
+            white-space: pre-wrap;
+        }
+        .ai-message {
+            background-color: #f8f9fa;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+        }
+        /* Markdown 样式 */
+        .markdown-body {
+            font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;
+            line-height: 1.6;
+        }
+        .markdown-body p {
+            margin: 1em 0;
+        }
+        .markdown-body pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow: auto;
+            margin: 1em 0;
+        }
+        .markdown-body code {
+            background-color: rgba(27,31,35,.05);
+            padding: .2em .4em;
+            border-radius: 3px;
+            font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+        }
+        .markdown-body h1, 
+        .markdown-body h2,
+        .markdown-body h3,
+        .markdown-body h4,
+        .markdown-body h5,
+        .markdown-body h6 {
+            margin: 1.5em 0 1em;
+            line-height: 1.25;
+        }
+        .markdown-body ul,
+        .markdown-body ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+        .markdown-body li {
+            margin: 0.5em 0;
+        }
+        .markdown-body blockquote {
+            margin: 1em 0;
+            padding: 0 1em;
+            color: #6a737d;
+            border-left: 0.25em solid #dfe2e5;
+        }
+        .markdown-body img {
+            max-width: 100%;
+            height: auto;
+        }
+        .markdown-body table {
+            border-spacing: 0;
+            border-collapse: collapse;
+            margin: 1em 0;
+            width: 100%;
+        }
+        .markdown-body table th,
+        .markdown-body table td {
+            padding: 6px 13px;
+            border: 1px solid #dfe2e5;
+        }
+        .markdown-body table tr {
+            background-color: #fff;
+            border-top: 1px solid #c6cbd1;
+        }
+        .markdown-body table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="settings">
+            <h2>设置</h2>
+            <div>
+                <label for="model">AI模型：</label>
+                <select id="model">
+                    <option value="gpt-4o-mini">GPT-4o-mini</option>
+                    <option value="chatgpt-4o-latest">ChatGPT-4o-Latest</option>
+                    <option value="gpt-4o">GPT-4o</option>
+                    <option value="gpt-4o-lite">GPT-4o-Lite</option>
+                    <option value="o1-mini">O1-Mini</option>
+                    <option value="gpt-4o-2024-11-20">gpt-4o-2024-11-20</option>
+                </select>
+            </div>
+            <div>
+                <label for="apiKey">API Key：</label>
+                <input type="password" id="apiKey" placeholder="请输入您的API Key" onchange="fetchAvailableModels()">
+            </div>
+            <div>
+                <label for="baseUrl">Base URL：</label>
+                <input type="text" id="baseUrl" placeholder="请输入Base URL（可选）">
+            </div>
+            <div>
+                <label for="systemPrompt">System Prompt：</label>
+                <textarea id="systemPrompt" rows="3" placeholder="请输入System Prompt（可选）">你是一个友好的AI助手。</textarea>
+            </div>
+            <div>
+                <label for="maxTokens">最大Token数：</label>
+                <input type="number" id="maxTokens" value="2000" min="1" max="4000">
+            </div>
+            <div>
+                <label for="temperature">Temperature：</label>
+                <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                <span id="temperatureValue">0.7</span>
+            </div>
+            <div>
+                <label for="streamOutput">流式输出：</label>
+                <input type="checkbox" id="streamOutput" checked>
+            </div>
+        </div>
+
+        <div class="chat-section">
+            <div class="chat-container" id="chatContainer">
+                <!-- 聊天消息将在这里显示 -->
+            </div>
+
+            <div class="input-container">
+                <textarea id="userInput" placeholder="请输入您的消息..." rows="3"></textarea>
+                <div class="button-container">
+                    <button onclick="sendMessage()" id="sendButton">发送</button>
+                    <button onclick="stopOutput()" id="stopButton" class="stop" style="display: none;">停止输出</button>
+                    <button onclick="saveChat()">保存聊天记录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let messages = [];
+        let currentController = null;
+        const md = window.markdownit({
+            breaks: true,  // 启用换行符转换
+            linkify: true, // 将URL转换为链接
+            typographer: true, // 启用一些语言中性的替换和引号美化
+            html: true     // 允许HTML标签
+        }).use(texmath, {
+            engine: katex,
+            delimiters: ['dollars', 'brackets'],  // 支持 $...$ 和 \[...\] 格式
+            katexOptions: {
+                macros: {'\\RR': '\\mathbb{R}'},
+                throwOnError: false,  // 不要因为解析错误而中断渲染
+                displayMode: true     // 默认使用显示模式
+            }
+        });
+
+        // 更新temperature显示值
+        document.getElementById('temperature').addEventListener('input', function(e) {
+            document.getElementById('temperatureValue').textContent = e.target.value;
+        });
+
+        // 获取可用模型列表
+        async function fetchAvailableModels() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) return;
+
+            const baseUrl = document.getElementById('baseUrl').value || 'https://pro.aiskt.com/v1';
+            const modelSelect = document.getElementById('model');
+
+            try {
+                const response = await fetch(`${baseUrl}/models`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // 清空现有选项
+                    modelSelect.innerHTML = '';
+                    // 添加新的模型选项
+                    data.data.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.id;
+                        if (model.id === 'gpt-4o-mini') {
+                            option.selected = true;
+                        }
+                        modelSelect.appendChild(option);
+                    });
+                } else {
+                    console.error('获取模型列表失败');
+                }
+            } catch (error) {
+                console.error('获取模型列表出错:', error);
+            }
+        }
+
+        function stopOutput() {
+            if (currentController) {
+                currentController.abort();
+                currentController = null;
+                document.getElementById('stopButton').style.display = 'none';
+                document.getElementById('sendButton').style.display = 'block';
+            }
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const chatContainer = document.getElementById('chatContainer');
+            const model = document.getElementById('model').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const baseUrl = document.getElementById('baseUrl').value;
+            const systemPrompt = document.getElementById('systemPrompt').value;
+            const maxTokens = parseInt(document.getElementById('maxTokens').value);
+            const temperature = parseFloat(document.getElementById('temperature').value);
+
+            if (!userInput.value.trim()) return;
+            if (!apiKey) {
+                alert('请输入API Key');
+                return;
+            }
+
+            // 添加用户消息到界面
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.textContent = userInput.value;
+            
+            chatContainer.appendChild(userMessage);
+
+            // 构建消息对象
+            let messageContent = {
+                role: 'user',
+                content: userInput.value
+            };
+
+            sendRequest(messageContent);
+
+            // 清空输入
+            userInput.value = '';
+        }
+
+        function sendRequest(messageContent) {
+            // 如果是第一条消息，添加system prompt
+            if (messages.length === 0 && document.getElementById('systemPrompt').value) {
+                messages.push({
+                    role: 'system',
+                    content: document.getElementById('systemPrompt').value
+                });
+            }
+
+            messages.push(messageContent);
+
+            const model = document.getElementById('model').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const baseUrl = document.getElementById('baseUrl').value;
+            const maxTokens = parseInt(document.getElementById('maxTokens').value);
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const streamOutput = document.getElementById('streamOutput').checked;
+
+            const endpoint = baseUrl || 'https://pro.aiskt.com/v1/chat/completions';
+
+            // 创建AI消息元素
+            const aiMessage = document.createElement('div');
+            aiMessage.className = 'message ai-message markdown-body';
+            chatContainer.appendChild(aiMessage);
+
+            if (streamOutput) {
+                // 显示停止按钮，隐藏发送按钮
+                document.getElementById('stopButton').style.display = 'block';
+                document.getElementById('sendButton').style.display = 'none';
+
+                // 创建新的 AbortController
+                currentController = new AbortController();
+                const signal = currentController.signal;
+
+                // 流式输出
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        max_tokens: maxTokens,
+                        temperature: temperature,
+                        stream: true
+                    }),
+                    signal: signal
+                }).then(response => {
+                    const reader = response.body.getReader();
+                    let accumulatedResponse = '';
+
+                    function readStream() {
+                        return reader.read().then(({done, value}) => {
+                            if (done) {
+                                messages.push({
+                                    role: 'assistant',
+                                    content: accumulatedResponse
+                                });
+                                // 恢复按钮状态
+                                document.getElementById('stopButton').style.display = 'none';
+                                document.getElementById('sendButton').style.display = 'block';
+                                return;
+                            }
+
+                            const chunk = new TextDecoder().decode(value);
+                            const lines = chunk.split('\n');
+                            
+                            lines.forEach(line => {
+                                if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                                    try {
+                                        const data = JSON.parse(line.substring(6));
+                                        if (data.choices[0].delta.content) {
+                                            accumulatedResponse += data.choices[0].delta.content;
+                                            aiMessage.innerHTML = md.render(accumulatedResponse);
+                                            
+                                            // 处理代码块的显示
+                                            aiMessage.querySelectorAll('pre code').forEach(block => {
+                                                block.style.display = 'block';
+                                                block.style.whiteSpace = 'pre';
+                                            });
+                                            
+                                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                                        }
+                                    } catch (e) {
+                                        console.error('Error parsing stream:', e);
+                                    }
+                                }
+                            });
+
+                            return readStream();
+                        });
+                    }
+
+                    return readStream();
+                }).catch(error => {
+                    if (error.name === 'AbortError') {
+                        console.log('Stream aborted');
+                    } else {
+                        console.error('Error:', error);
+                        alert('发送消息失败，请检查您的设置和网络连接');
+                    }
+                    // 恢复按钮状态
+                    document.getElementById('stopButton').style.display = 'none';
+                    document.getElementById('sendButton').style.display = 'block';
+                });
+            } else {
+                // 非流式输出
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        max_tokens: maxTokens,
+                        temperature: temperature
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const aiResponse = data.choices[0].message.content;
+                    
+                    // 处理换行并使用markdown-it渲染内容
+                    const formattedResponse = aiResponse.replace(/\n/g, '  \n'); // 确保Markdown换行正确
+                    aiMessage.innerHTML = md.render(formattedResponse);
+                    
+                    // 处理代码块的显示
+                    aiMessage.querySelectorAll('pre code').forEach(block => {
+                        block.style.display = 'block';
+                        block.style.whiteSpace = 'pre';
+                    });
+
+                    // 添加AI回复到消息数组
+                    messages.push({
+                        role: 'assistant',
+                        content: aiResponse
+                    });
+
+                    // 滚动到底部
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('发送消息失败，请检查您的设置和网络连接');
+                });
+            }
+        }
+
+        // 添加回车发送功能
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 保存聊天记录功能
+        function saveChat() {
+            if (messages.length === 0) {
+                alert('没有聊天记录可供保存');
+                return;
+            }
+
+            const chatContent = messages.map(msg => {
+                return `${msg.role}: ${msg.content}`;
+            }).join('\n\n');
+
+            const blob = new Blob([chatContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `聊天记录_${new Date().toLocaleString().replace(/[\/\s:]/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
