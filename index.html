@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -167,6 +166,28 @@
         .markdown-body table tr:nth-child(2n) {
             background-color: #f6f8fa;
         }
+        /* 高级设置折叠样式 */
+        .advanced-settings {
+            display: none;
+            margin-top: 10px;
+        }
+        .advanced-settings.show {
+            display: block;
+        }
+        .advanced-toggle {
+            background: none;
+            border: none;
+            color: #007bff;
+            padding: 5px 0;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            margin: 10px 0;
+        }
+        .advanced-toggle:hover {
+            text-decoration: underline;
+            background: none;
+        }
     </style>
 </head>
 <body>
@@ -184,30 +205,34 @@
                     <option value="gpt-4o-2024-11-20">gpt-4o-2024-11-20</option>
                 </select>
             </div>
-            <div>
-                <label for="apiKey">API Key：</label>
-                <input type="password" id="apiKey" placeholder="请输入您的API Key" onchange="fetchAvailableModels()">
-            </div>
-            <div>
-                <label for="baseUrl">Base URL：</label>
-                <input type="text" id="baseUrl" placeholder="请输入Base URL（可选）">
-            </div>
-            <div>
-                <label for="systemPrompt">System Prompt：</label>
-                <textarea id="systemPrompt" rows="3" placeholder="请输入System Prompt（可选）">你是一个友好的AI助手。</textarea>
-            </div>
-            <div>
-                <label for="maxTokens">最大Token数：</label>
-                <input type="number" id="maxTokens" value="2000" min="1" max="4000">
-            </div>
-            <div>
-                <label for="temperature">Temperature：</label>
-                <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
-                <span id="temperatureValue">0.7</span>
-            </div>
-            <div>
-                <label for="streamOutput">流式输出：</label>
-                <input type="checkbox" id="streamOutput" checked>
+
+            <button class="advanced-toggle" onclick="toggleAdvancedSettings()">高级设置 ▼</button>
+            <div class="advanced-settings" id="advancedSettings">
+                <div>
+                    <label for="apiKey">API Key：</label>
+                    <input type="password" id="apiKey" placeholder="请输入您的API Key（可选）" value="sk-ChCzqxK2bcjznVVg3e571b93Dd9d4bE798631a7bB4770fFf" onchange="fetchAvailableModels()">
+                </div>
+                <div>
+                    <label for="baseUrl">Base URL：</label>
+                    <input type="text" id="baseUrl" placeholder="请输入Base URL（可选）" value="https://one.aiskt.com/v1">
+                </div>
+                <div>
+                    <label for="systemPrompt">System Prompt：</label>
+                    <textarea id="systemPrompt" rows="3" placeholder="请输入System Prompt（可选）">你是一个友好的AI助手。</textarea>
+                </div>
+                <div>
+                    <label for="maxTokens">最大Token数：</label>
+                    <input type="number" id="maxTokens" value="2000" min="1" max="4000">
+                </div>
+                <div>
+                    <label for="temperature">Temperature：</label>
+                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                    <span id="temperatureValue">0.7</span>
+                </div>
+                <div>
+                    <label for="streamOutput">流式输出：</label>
+                    <input type="checkbox" id="streamOutput" checked>
+                </div>
             </div>
         </div>
 
@@ -228,6 +253,7 @@
     </div>
 
     <script>
+        fetchAvailableModels()
         let messages = [];
         let currentController = null;
         const md = window.markdownit({
@@ -250,9 +276,17 @@
             document.getElementById('temperatureValue').textContent = e.target.value;
         });
 
+        // 高级设置的折叠/展开功能
+        function toggleAdvancedSettings() {
+            const advancedSettings = document.getElementById('advancedSettings');
+            const toggleButton = document.querySelector('.advanced-toggle');
+            advancedSettings.classList.toggle('show');
+            toggleButton.textContent = advancedSettings.classList.contains('show') ? '高级设置 ▲' : '高级设置 ▼';
+        }
+
         // 获取可用模型列表
         async function fetchAvailableModels() {
-            const apiKey = document.getElementById('apiKey').value;
+            const apiKey = document.getElementById('apiKey').value || 'sk-ChCzqxK2bcjznVVg3e571b93Dd9d4bE798631a7bB4770fFf';
             if (!apiKey) return;
 
             const baseUrl = document.getElementById('baseUrl').value || 'https://one.aiskt.com/v1';
@@ -301,7 +335,7 @@
             const userInput = document.getElementById('userInput');
             const chatContainer = document.getElementById('chatContainer');
             const model = document.getElementById('model').value;
-            const apiKey = document.getElementById('apiKey').value;
+            const apiKey = document.getElementById('apiKey').value || 'sk-ChCzqxK2bcjznVVg3e571b93Dd9d4bE798631a7bB4770fFf';
             const baseUrl = document.getElementById('baseUrl').value;
             const systemPrompt = document.getElementById('systemPrompt').value;
             const maxTokens = parseInt(document.getElementById('maxTokens').value);
@@ -344,7 +378,7 @@
             messages.push(messageContent);
 
             const model = document.getElementById('model').value;
-            const apiKey = document.getElementById('apiKey').value;
+            const apiKey = document.getElementById('apiKey').value || 'sk-ChCzqxK2bcjznVVg3e571b93Dd9d4bE798631a7bB4770fFf';
             const baseUrl = document.getElementById('baseUrl').value || 'https://one.aiskt.com/v1';
             const maxTokens = parseInt(document.getElementById('maxTokens').value);
             const temperature = parseFloat(document.getElementById('temperature').value);
