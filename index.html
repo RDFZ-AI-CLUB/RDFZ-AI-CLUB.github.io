@@ -254,7 +254,7 @@
             const apiKey = document.getElementById('apiKey').value;
             if (!apiKey) return;
 
-            const baseUrl = document.getElementById('baseUrl').value || 'https://pro.aiskt.com/v1';
+            const baseUrl = document.getElementById('baseUrl').value || 'https://one.aiskt.com/v1';
             const modelSelect = document.getElementById('model');
 
             try {
@@ -349,17 +349,14 @@
             const temperature = parseFloat(document.getElementById('temperature').value);
             const streamOutput = document.getElementById('streamOutput').checked;
 
-            const endpoint = baseUrl || 'https://pro.aiskt.com/v1/chat/completions';
+            const endpoint = baseUrl + '/chat/completions';
 
             // 创建AI消息元素
             const aiMessage = document.createElement('div');
             aiMessage.className = 'message ai-message markdown-body';
             chatContainer.appendChild(aiMessage);
 
-            // 检查是否为O1系列模型
-            const isO1Model = model.toLowerCase().startsWith('o1');
-
-            if (streamOutput && !isO1Model) {
+            if (streamOutput) {
                 // 显示停止按钮，隐藏发送按钮
                 document.getElementById('stopButton').style.display = 'block';
                 document.getElementById('sendButton').style.display = 'none';
@@ -443,25 +440,18 @@
                 });
             } else {
                 // 非流式输出
-                const requestBody = {
-                    model: model,
-                    messages: messages
-                };
-
-                // 只有非O1模型才添加参数
-                if (!isO1Model) {
-                    requestBody.stream = false;
-                    requestBody.max_tokens = maxTokens;
-                    requestBody.temperature = temperature;
-                }
-
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`
                     },
-                    body: JSON.stringify(requestBody)
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        max_tokens: maxTokens,
+                        temperature: temperature
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {
