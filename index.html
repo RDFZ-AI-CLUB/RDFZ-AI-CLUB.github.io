@@ -445,14 +445,14 @@
                 // 非流式输出
                 const requestBody = {
                     model: model,
-                    messages: messages,
-                    max_tokens: maxTokens,
-                    temperature: temperature
+                    messages: messages
                 };
 
-                // 只有非O1模型才添加stream参数
+                // 只有非O1模型才添加参数
                 if (!isO1Model) {
                     requestBody.stream = false;
+                    requestBody.max_tokens = maxTokens;
+                    requestBody.temperature = temperature;
                 }
 
                 fetch(endpoint, {
