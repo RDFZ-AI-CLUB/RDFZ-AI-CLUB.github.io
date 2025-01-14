@@ -344,12 +344,12 @@
 
             const model = document.getElementById('model').value;
             const apiKey = document.getElementById('apiKey').value;
-            const baseUrl = document.getElementById('baseUrl').value;
+            const baseUrl = document.getElementById('baseUrl').value || 'https://one.aiskt.com/v1';
             const maxTokens = parseInt(document.getElementById('maxTokens').value);
             const temperature = parseFloat(document.getElementById('temperature').value);
             const streamOutput = document.getElementById('streamOutput').checked;
 
-            const endpoint = baseUrl + '/chat/completions';
+            const endpoint = `${baseUrl}/chat/completions`;
 
             // 创建AI消息元素
             const aiMessage = document.createElement('div');
