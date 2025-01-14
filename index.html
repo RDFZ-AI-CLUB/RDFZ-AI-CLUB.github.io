@@ -356,7 +356,10 @@
             aiMessage.className = 'message ai-message markdown-body';
             chatContainer.appendChild(aiMessage);
 
-            if (streamOutput) {
+            // 检查是否为O1系列模型
+            const isO1Model = model.toLowerCase().startsWith('o1');
+
+            if (streamOutput && !isO1Model) {
                 // 显示停止按钮，隐藏发送按钮
                 document.getElementById('stopButton').style.display = 'block';
                 document.getElementById('sendButton').style.display = 'none';
@@ -440,18 +443,25 @@
                 });
             } else {
                 // 非流式输出
+                const requestBody = {
+                    model: model,
+                    messages: messages,
+                    max_tokens: maxTokens,
+                    temperature: temperature
+                };
+
+                // 只有非O1模型才添加stream参数
+                if (!isO1Model) {
+                    requestBody.stream = false;
+                }
+
                 fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`
                     },
-                    body: JSON.stringify({
-                        model: model,
-                        messages: messages,
-                        max_tokens: maxTokens,
-                        temperature: temperature
-                    })
+                    body: JSON.stringify(requestBody)
                 })
                 .then(response => response.json())
                 .then(data => {
