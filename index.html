@@ -222,12 +222,17 @@
                 </div>
                 <div>
                     <label for="maxTokens">最大Token数：</label>
-                    <input type="number" id="maxTokens" value="2000" min="1" max="4000">
+                    <input type="number" id="maxTokens" value="2000" min="1" max="2000">
                 </div>
                 <div>
                     <label for="temperature">Temperature：</label>
                     <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
                     <span id="temperatureValue">0.7</span>
+                </div>
+                <div>
+                    <label for="contextCount">上下文携带数目：</label>
+                    <input type="range" id="contextCount" min="1" max="20" step="1" value="5" onchange="updateContextCount()">
+                    <span id="contextCountValue">5</span>
                 </div>
                 <div>
                     <label for="streamOutput">流式输出：</label>
@@ -255,6 +260,7 @@
     <script>
         fetchAvailableModels()
         let messages = [];
+        let displayMessages = []; // 用于显示的完整消息历史
         let currentController = null;
         const md = window.markdownit({
             breaks: true,  // 启用换行符转换
@@ -275,6 +281,39 @@
         document.getElementById('temperature').addEventListener('input', function(e) {
             document.getElementById('temperatureValue').textContent = e.target.value;
         });
+
+        // 更新contextCount显示值和消息数组
+        document.getElementById('contextCount').addEventListener('input', function(e) {
+            document.getElementById('contextCountValue').textContent = e.target.value;
+            updateContextCount();
+        });
+
+        // 更新上下文携带数目
+        function updateContextCount() {
+            const contextCount = parseInt(document.getElementById('contextCount').value);
+            const chatContainer = document.getElementById('chatContainer');
+            
+            // 更新AI使用的消息数组
+            if (displayMessages.length > contextCount) {
+                messages = displayMessages.slice(-contextCount);
+            } else {
+                messages = [...displayMessages];
+            }
+
+            // 更新聊天界面（显示所有历史消息）
+            chatContainer.innerHTML = '';
+            displayMessages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.role}-message`;
+                if (msg.role === 'assistant') {
+                    messageDiv.classList.add('markdown-body');
+                    messageDiv.innerHTML = md.render(msg.content);
+                } else {
+                    messageDiv.textContent = msg.content;
+                }
+                chatContainer.appendChild(messageDiv);
+            });
+        }
 
         // 高级设置的折叠/展开功能
         function toggleAdvancedSettings() {
@@ -331,6 +370,13 @@
             }
         }
 
+        function estimateTokens(text) {
+            // 简单估算：中文字符按2个token计算，英文单词按1个token计算
+            const chineseCount = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+            const englishCount = (text.match(/[a-zA-Z]+/g) || []).length;
+            return chineseCount * 2 + englishCount;
+        }
+
         function sendMessage() {
             const userInput = document.getElementById('userInput');
             const chatContainer = document.getElementById('chatContainer');
@@ -340,11 +386,31 @@
             const systemPrompt = document.getElementById('systemPrompt').value;
             const maxTokens = parseInt(document.getElementById('maxTokens').value);
             const temperature = parseFloat(document.getElementById('temperature').value);
+            const contextCount = parseInt(document.getElementById('contextCount').value);
 
             if (!userInput.value.trim()) return;
             if (!apiKey) {
                 alert('请输入API Key');
                 return;
+            }
+
+            // 检查单次输入的token数
+            const inputTokens = estimateTokens(userInput.value);
+            if (inputTokens > 2000) {
+                alert('单次输入超过2000 tokens限制，请减少输入内容');
+                return;
+            }
+
+            // 更新上下文携带数目
+            updateContextCount();
+
+            // 检查token数限制
+            let totalTokens = messages.reduce((sum, msg) => sum + estimateTokens(msg.content), 0) + inputTokens;
+            if (totalTokens > 10000) {
+                while (totalTokens > 10000 && messages.length > 0) {
+                    const removedMsg = messages.shift();
+                    totalTokens -= estimateTokens(removedMsg.content);
+                }
             }
 
             // 添加用户消息到界面
@@ -360,6 +426,16 @@
                 content: userInput.value
             };
 
+            // 添加到显示消息数组
+            displayMessages.push(messageContent);
+            
+            // 更新AI使用的消息数组
+            if (displayMessages.length > contextCount) {
+                messages = displayMessages.slice(-contextCount);
+            } else {
+                messages = [...displayMessages];
+            }
+
             sendRequest(messageContent);
 
             // 清空输入
@@ -374,8 +450,6 @@
                     content: document.getElementById('systemPrompt').value
                 });
             }
-
-            messages.push(messageContent);
 
             const model = document.getElementById('model').value;
             const apiKey = document.getElementById('apiKey').value || 'sk-ChCzqxK2bcjznVVg3e571b93Dd9d4bE798631a7bB4770fFf';
@@ -422,10 +496,12 @@
                     function readStream() {
                         return reader.read().then(({done, value}) => {
                             if (done) {
-                                messages.push({
+                                displayMessages.push({
                                     role: 'assistant',
                                     content: accumulatedResponse
                                 });
+                                // 更新上下文携带数目
+                                updateContextCount();
                                 // 恢复按钮状态
                                 document.getElementById('stopButton').style.display = 'none';
                                 document.getElementById('sendButton').style.display = 'block';
@@ -502,11 +578,14 @@
                         block.style.whiteSpace = 'pre';
                     });
 
-                    // 添加AI回复到消息数组
-                    messages.push({
+                    // 添加AI回复到显示消息数组
+                    displayMessages.push({
                         role: 'assistant',
                         content: aiResponse
                     });
+
+                    // 更新上下文携带数目
+                    updateContextCount();
 
                     // 滚动到底部
                     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -528,12 +607,12 @@
 
         // 保存聊天记录功能
         function saveChat() {
-            if (messages.length === 0) {
+            if (displayMessages.length === 0) {
                 alert('没有聊天记录可供保存');
                 return;
             }
 
-            const chatContent = messages.map(msg => {
+            const chatContent = displayMessages.map(msg => {
                 return `${msg.role}: ${msg.content}`;
             }).join('\n\n');
 
