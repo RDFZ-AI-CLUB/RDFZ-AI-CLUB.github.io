@@ -204,6 +204,21 @@
                     <option value="o1-mini">O1-Mini</option>
                     <option value="gpt-4o-2024-11-20">gpt-4o-2024-11-20</option>
                 </select>
+                <button onclick="showRecommendedModels()" style="background: none; border: none; color: #007bff; cursor: pointer; padding: 0; text-align: left;">推荐模型（点我）</button>
+                <div id="recommendedModelsPopup" style="display: none; position: fixed; top: 25%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 15px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; width: 50%;">
+                    <h3>推荐模型</h3>
+                    <p>• gpt-4o-2024-11-20：性能最好的模型，适合复杂任务</p>
+                    <p>• gpt-4o-mini-2024-07-18：性价比最高的选择</p>
+                    <button onclick="closeRecommendedModels()" style="margin-top: 10px;">关闭</button>
+                </div>
+                <script>
+                    function showRecommendedModels() {
+                        document.getElementById('recommendedModelsPopup').style.display = 'block';
+                    }
+                    function closeRecommendedModels() {
+                        document.getElementById('recommendedModelsPopup').style.display = 'none';
+                    }
+                </script>
             </div>
 
             <button class="advanced-toggle" onclick="toggleAdvancedSettings()">高级设置 ▼</button>
