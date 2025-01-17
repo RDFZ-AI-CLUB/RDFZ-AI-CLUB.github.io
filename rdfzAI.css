@@ -1,0 +1,204 @@
+:root {
+    --bg-color: #212121;
+    --bg-color2: #2F2F2F ;
+    --bg-color3: #171717 ;
+    --text-color: #ECECEC;
+    --widget-color: #009688;
+    --widget-color-hover: #007668;
+    --link-color: #7AB7FF;
+}
+
+body {
+    color: var(--text-color);
+    background-color: var(--bg-color); /* 设置网页的背景颜色 */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+a {
+    color: var(--link-color);
+}
+input, textarea {
+    color: var(--text-color);
+    border: none;  /* 去除边框 */
+    background-color: var(--bg-color2); /* 设置所有输入框和文本框的背景颜色 */
+    padding: 10px;
+    font-size: 16px;
+}
+.container {
+    display: flex;
+    gap: 40px;
+}
+.settings {
+    background-color: var(--bg-color);
+    padding: 15px;
+    width: 25%;
+    border-radius: 5px;
+    height: fit-content;
+}
+.settings div {
+    margin-bottom: 10px;
+    width: 100%;
+}
+.settings label {
+    display: block;
+    margin-bottom: 5px;
+}
+.settings input,
+.settings select,
+.settings textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.chat-section {
+    width: 100%;
+}
+.chat-container{
+    display: flex;
+    flex-direction: column;  /* 设置竖直方向排列 */
+    /*gap: 10px;  设置元素之间的间隔 */
+    height: calc(100vh - 245px);
+    border-radius: 17px;
+    padding: 15px;
+    overflow-y: auto;
+}
+.input-container {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+textarea {
+    width: 100%;
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 200px;
+}
+button {
+    padding: 10px 20px;
+    background-color: var(--widget-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: var(--widget-color-hover);
+}
+button.stop {
+    background-color: #dc3545;
+}
+button.stop:hover {
+    background-color: #c82333;
+}
+.message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 10px;
+    width: fit-content;
+}
+.user-message {
+    margin-left: auto;
+    background-color: var(--bg-color2);
+    white-space: pre-wrap;
+}
+.ai-message {
+    background-color: var(--bg-color);
+}
+.button-container {
+    display: flex;
+    gap: 10px;
+}
+/* Markdown 样式 */
+.markdown-body {
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;
+    line-height: 1.6;
+}
+.markdown-body p {
+    margin: 1em 0;
+}
+.markdown-body pre {
+    background-color: var(--bg-color3);
+    padding: 16px;
+    border-radius: 6px;
+    overflow: auto;
+    margin: 1em 0;
+}
+.markdown-body code {
+    background-color: var(--bg-color2);
+    padding: .2em .4em;
+    border-radius: 5px;
+    font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+    margin: 1.5em 0 1em;
+    line-height: 1.25;
+}
+.markdown-body ul,
+.markdown-body ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+.markdown-body li {
+    margin: 0.5em 0;
+}
+.markdown-body blockquote {
+    margin: 1em 0;
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+}
+.markdown-body img {
+    max-width: 100%;
+    height: auto;
+}
+.markdown-body table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin: 1em 0;
+    width: 100%;
+}
+.markdown-body table th,
+.markdown-body table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+.markdown-body table tr {
+    background-color: var(--bg-color2);
+    border-top: 1px solid #c6cbd1;
+}
+.markdown-body table tr:nth-child(2n) {
+    background-color: var(--bg-color3);
+}
+/* 高级设置折叠样式 */
+.advanced-settings {
+    display: none;
+    margin-top: 10px;
+}
+.advanced-settings.show {
+    display: block;
+}
+.advanced-toggle {
+    background: none;
+    border: none;
+    color: var(--widget-color);
+    padding: 5px 0;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    margin: 10px 0;
+}
+.advanced-toggle:hover {
+    text-decoration: underline;
+    background: none;
+}
+
