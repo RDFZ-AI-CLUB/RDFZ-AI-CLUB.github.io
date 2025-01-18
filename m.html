@@ -9,15 +9,17 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath@1.0.0/texmath.min.js"></script>
     <script src="rdfzAI.js" defer></script>
-    <script src="deviceCheck.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <link rel="stylesheet" href="rdfzAI.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-
+<div class="navbar-mobile">
+    <i class="fa fa-gear fa-2x" style="margin-top: 12px;display: inline-block;float: left" onclick="toggleSidebar()"></i>
+    <h1 style="margin-top: 10px;display: inline-block;">RDFZ AI</h1>
+</div>
 <div class="container">
-    <div class="settings">
-        <h1>RDFZ AI</h1>
+    <div class="settings-mobile" id="settingSidebar">
         <h2>设置</h2>
         <div>
             <label for="model">AI模型：</label>
@@ -51,8 +53,8 @@
             </script>
         </div>
 
-        <button class="advanced-toggle" onclick="toggleAdvancedSettings()">高级设置 ▼</button>
-        <div class="advanced-settings" id="advancedSettings">
+        <button class="advanced-toggle">高级设置 ▼</button>
+        <div id="advancedSettings" style="margin-top: 10px;">
             <div>
                 <label for="apiKey">API Key：</label>
                 <input type="text" id="apiKey" placeholder="请输入您的API Key（可选）"
@@ -90,7 +92,7 @@
     </div>
 
     <div class="chat-section">
-        <div class="chat-container" id="chatContainer">
+        <div class="chat-container-mobile" id="chatContainer">
             <!-- 聊天消息将在这里显示 -->
         </div>
 

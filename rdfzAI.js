@@ -368,3 +368,13 @@ function saveChat() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('settingSidebar');
+    if (sidebar.style.display === 'none'){
+        sidebar.style.display = "block";
+    }else{
+        sidebar.style.display = "none";
+    }
+
+}
