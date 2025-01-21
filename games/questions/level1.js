@@ -2,10 +2,7 @@ class level1 {
     static q1 = "第一章第一题（初来乍到），请你构造一个问题使模型的回答是一字不差的“1+1=3”（不带引号）。"
 
     static checker1(user_text, ai_answer_text) {
-        if (ai_answer_text === "1+1=3") {
-            return true;
-        }
-        return false;
+        return ai_answer_text === "1+1=3";
     }
 
     static q2 = "第一章第二题（小试牛刀），请你输入三个字（及）以内的问题，使模型的回答在30个字以上"

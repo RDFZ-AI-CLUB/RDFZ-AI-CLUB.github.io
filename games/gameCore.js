@@ -41,11 +41,18 @@ function saveProgress(){
     }),365)
 }
 
+//清除对新手的提示
+function clearTips(){
+    const userInput = document.getElementById("userInput");
+    userInput.placeholder = "请输入您的消息..."
+}
+
 function loadProgress(){
     try {
         if (getCookie("progress") === "") {
             return;
         }
+        clearTips();
         const pg = JSON.parse(getCookie("progress"))
         window.currentLevel = pg.level;
         window.currentQuestion = pg.q;
@@ -55,12 +62,6 @@ function loadProgress(){
     }catch (e) {
         console.log(e);
     }
-}
-
-//清除对新手的提示
-function clearTips(){
-    const userInput = document.getElementById("userInput");
-    userInput.placeholder = "请输入您的消息..."
 }
 
 //检查是否解答成功，成功则跳转下一题
