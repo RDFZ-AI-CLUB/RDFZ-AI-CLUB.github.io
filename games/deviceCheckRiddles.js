@@ -6,5 +6,5 @@ function isMobileDevice() {
 
 // 如果是移动端设备，跳转到指定页面
 if (isMobileDevice()) {
-    //window.location.href = "/mriddles.html";  // 移动端跳转到这个 URL
+    window.location.href = "/games/riddlesm.html";  // 移动端跳转到这个 URL
 }
