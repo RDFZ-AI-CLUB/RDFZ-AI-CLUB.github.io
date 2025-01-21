@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDFZ AI riddleGames</title>
+    <!-- 添加 markdown-it 库和 KaTeX 支持 -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath@1.0.0/texmath.min.js"></script>
+    <script src="math.js"></script>
+    <script src="cookies.js"></script>
+    <script src="gameCore.js" defer></script>
+    <script src="rdfzAIRiddles.js" defer></script>
+    <script src="deviceCheckRiddles.js"></script>
+    <script src="questions/level1.js"></script>
+    <script src="questions/level2.js"></script>
+    <script src="questions/level3.js"></script>
+    <script src="questions/level4.js"></script>
+    <script src="questions/level5.js"></script>
+    <script src="questions/level6.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="rdfzAIRiddles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+<!-- 失败时的提示 -->
+<div id="onFail" style="display: none;">
+    <div style="position: fixed; bottom: 5%; left: 15%; transform: translate(-50%, -50%); background: var(--bg-color); padding-left: 15px; padding-right: 15px; border: 2px solid #dc3545; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; width: fit-content;">
+        <i class="fa fa-remove fa-lg" style="display: inline-block;"></i><h1 style="display: inline-block">失败,请重试</h1>
+    </div>
+</div>
+<!-- 成功解答对话框 -->
+<div id="onSuccess" style="display: none;">
+    <div class="overlay"></div>
+    <div style="position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-color); padding: 25px; border: 2px solid #5FB878; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; width: fit-content;">
+        <i class="fa fa-thumbs-o-up fa-lg"></i><h1>恭喜你，成功解答本题</h1>
+        <button onclick="document.getElementById('onSuccess').style.display='none';loadQuestion()" style="margin-top: 10px;">下一题</button>
+    </div>
+</div>
+
+<!-- 通关的界面 -->
+<div id="onWin" style="display: none;">
+    <div class="overlay"></div>
+    <div style="text-align: center;position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-color); padding: 25px; border: 2px solid #5FB878; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; width: fit-content;">
+        <i class="fa fa-thumbs-o-up fa-lg"></i><h1>Good Job!</h1>
+        <p>恭喜你你成功通关了LLM Riddles,相信你对生成式AI大模型回答问题的方式和过程已有了更深入的理解,相信你已经学会了如何向AI提问</p>
+        <p>感谢你对人大附中人工智能社的支持,希望在今后人工智能将会成为你的得力助手</p>
+        <p>社长: Terryduan</p>
+        <p>开发者: StrayMeteor3337</p>
+        <p>源代码: <a target="_blank" href="https://github.com/RDFZ-AI-CLUB/RDFZ-AI-CLUB.github.io">GitHub/RDFZ-AI-CLUB</a></p>
+        <p>你可以截图此界面</p>
+        <p>------------------By 人大附中人工智能社------------------</p>
+        <button onclick="document.getElementById('onWin').style.display='none';" style="margin-top: 10px;">关闭</button>
+        <button onclick="if (confirm('这将清除所有的游戏进度，你将回到第一章，确定重置吗')){deleteCookie('win');deleteCookie('progress')}" style="margin-top: 10px;background-color: #c82333;">重置游戏进度</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="settings">
+        <h1>RDFZ AI</h1>
+        <p>活动: LLM Riddles(AI谜语)</p>
+        <h2>设置</h2>
+        <div>
+            <label for="model">AI模型：</label>
+            <select id="model" disabled>
+                <option value="gpt-4o-mini">GPT-4o-mini</option>
+                <option value="chatgpt-4o-latest">ChatGPT-4o-Latest</option>
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-4o-lite">GPT-4o-Lite</option>
+                <option value="o1-mini">O1-Mini</option>
+                <option value="gpt-4o-2024-11-20">gpt-4o-2024-11-20</option>
+            </select>
+            <button onclick="showRecommendedModels()"
+                    style="background: none; border: none; color: var(--widget-color); cursor: pointer; padding: 0; text-align: left;">
+                关于LLM Riddles
+            </button>
+            <div id="recommendedModelsPopup"
+                 style="display: none; position: fixed; top: 25%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-color); padding: 15px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; width: fit-content;">
+                <h3>LLM Riddles</h3>
+                <p>创意来自<a target="_blank" href="https://github.com/opendilab/LLMRiddles">https://github.com/opendilab/LLMRiddles</a></p>
+                <button onclick="closeRecommendedModels()" style="margin-top: 10px;">关闭</button>
+            </div>
+            <script>
+                function showRecommendedModels() {
+                    document.getElementById('recommendedModelsPopup').style.display = 'block';
+                }
+
+                function closeRecommendedModels() {
+                    document.getElementById('recommendedModelsPopup').style.display = 'none';
+                }
+            </script>
+        </div>
+
+        <button class="advanced-toggle" onclick="toggleAdvancedSettings()">高级设置 ▲</button>
+        <div class="advanced-settings" id="advancedSettings">
+            <h6 style="color: #FF5722;margin-top: 0">你不可以在本页面更改任何模型设置</h6>
+            <div>
+                <label for="apiKey">API Key：</label>
+                <input type="text" id="apiKey" placeholder="请输入您的API Key（可选）"
+                       value="sk-ChCzqxK2bcjznVVg3e571b93Dd9d4bE798631a7bB4770fFf" onchange="fetchAvailableModels()" disabled>
+            </div>
+            <div>
+                <label for="baseUrl">Base URL：</label>
+                <input type="text" id="baseUrl" placeholder="请输入Base URL（可选）" value="https://one.aiskt.com/v1" disabled>
+            </div>
+            <div>
+                <label for="systemPrompt">System Prompt：</label>
+                <textarea id="systemPrompt" rows="3"
+                          placeholder="请输入System Prompt（可选）" disabled>你是ChatGPT,一个由OpenAI训练的大语言模型.在本对话中,请确保您输出的答案没有知识性错误</textarea>
+            </div>
+            <div>
+                <label for="maxTokens">最大Token数：</label>
+                <input type="number" id="maxTokens" value="2000" min="1" max="2000" disabled>
+            </div>
+            <div>
+                <label for="temperature">Temperature：</label>
+                <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" disabled>
+                <span id="temperatureValue">0.7</span>
+            </div>
+            <div>
+                <label for="contextCount">上下文携带数目：</label>
+                <input type="range" id="contextCount" min="1" max="20" step="1" value="5"
+                       onchange="updateContextCount()" disabled>
+                <span id="contextCountValue">5</span>
+            </div>
+            <div>
+                <label for="streamOutput">流式输出：</label>
+                <input type="checkbox" id="streamOutput" checked disabled>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-section">
+
+        <p id="riddlesQuestion" class="riddlesQuestion">level加载中……</p>
+        <div class="chat-container" id="chatContainer">
+            <!-- 聊天消息将在这里显示 -->
+        </div>
+
+        <div class="input-container">
+            <textarea id="userInput" placeholder="请输入您的消息...
+提示:有时候多问AI几次相同的问题可以增加成功的概率;
+     已禁用上下文,请不要尝试通过强制构造语境的方法通关
+     请关闭无痕模式以确保能正常保存游戏进度
+     " rows="5"></textarea>
+            <div class="button-container">
+                <button onclick="sendMessage()" id="sendButton">发送</button>
+                <button id="stopButton" class="stop" style="display: none;">正在输出</button>
+                <button onclick="saveChat()">保存聊天记录</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>
