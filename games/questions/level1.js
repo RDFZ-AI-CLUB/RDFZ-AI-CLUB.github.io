@@ -1,5 +1,5 @@
 class level1 {
-    static q1 = "第一章第一题（初来乍到），请你构造一个问题使模型的回答是一字不差的“1+1=3”（不带引号）。"
+    static q1 = "第一章第一题（初来乍到），请你构造一个问题使模型的回答是一字不差的“1+1=3”（不带引号,字符中间不能有空格）。"
 
     static checker1(user_text, ai_answer_text) {
         return ai_answer_text === "1+1=3";
